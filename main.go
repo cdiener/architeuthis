@@ -1,16 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"log"
+
+	"github.com/cdiener/architeuthis/cmd"
 )
 
 func main() {
-	m, err := Summarize("test.k2")
+	m, err := cmd.Summarize("positive_1.k2")
 	if err != nil {
 		log.Fatal(err)
 	}
-	k := "3864"
-	v := m[k]
-	fmt.Printf("%s: %v\n", k, *v)
+	err = cmd.SaveMapping(m, "test.csv")
+	if err != nil {
+		log.Fatal(err)
+	}
 }

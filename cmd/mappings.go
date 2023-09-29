@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/csv"
 	"fmt"
 	"log"
 	"os"
@@ -75,4 +76,24 @@ func UpdateMapping(entry *Taxon, kmer_taxid string, count int) {
 	} else {
 		entry.Classes[kmer_taxid] += count
 	}
+}
+
+func SaveMapping(k2map Mapping, filepath string) error {
+	mfile, err := os.Create(filepath)
+	if err != nil {
+		log.Fatal("Could not open file for writing!")
+		return err
+	}
+	defer mfile.Close()
+	writer := csv.NewWriter(mfile)
+	writer.Write([]string{"classification", "reads", "taxid", "n"})
+	for class, v := range k2map {
+		for taxid, n := range v.Classes {
+			recs := []string{class, strconv.Itoa(v.Reads), taxid, strconv.Itoa(n)}
+			writer.Write(recs)
+		}
+	}
+	writer.Flush()
+
+	return nil
 }
