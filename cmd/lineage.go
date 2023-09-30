@@ -1,0 +1,155 @@
+/*
+Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+*/
+package cmd
+
+import (
+	"encoding/csv"
+	"errors"
+	"io"
+	"log"
+	"os"
+
+	"github.com/cdiener/architeuthis/lib"
+	"github.com/spf13/cobra"
+)
+
+var TaxidIndex = map[string]string{
+	"bracken":        "taxonomy_id",
+	"bracken-merged": "taxonomy_id",
+	"mapping":        "classification",
+}
+
+// lineageCmd represents the lineage command
+var lineageCmd = &cobra.Command{
+	Use:   "lineage",
+	Short: "Add lineage information to Bracken output.",
+	Long: `Sometimes you would like to annotate taxonomy IDs with their full
+canonical lineage. This command helps with this.
+
+The 'lineage' command does require taxonkit and the databases to be installed to
+work.
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		filetype, err := cmd.Flags().GetString("type")
+		if err != nil {
+			log.Fatal(err)
+		}
+		format, err := cmd.Flags().GetString("format")
+		if err != nil {
+			log.Fatal(err)
+		}
+		out, err := cmd.Flags().GetString("out")
+		if err != nil {
+			log.Fatal(err)
+		}
+		datadir, err := cmd.Flags().GetString("data-dir")
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = FoldInLineage(args[0], filetype, format, out, datadir)
+		if err != nil {
+			log.Fatal(err)
+		}
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(lineageCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// lineageCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	lineageCmd.Flags().String("data-dir", "", "The path to the taxonomy dumps.")
+	lineageCmd.Flags().StringP("type", "t", "bracken", "The type of the file to be annotated.")
+	lineageCmd.Flags().StringP("format", "f", "{k};{p};{c};{o};{f};{g};{s}", "The format of the files.")
+	lineageCmd.Flags().StringP("out", "o", "annotated.csv", "The filename of the output CSV.")
+}
+
+func FoldInLineage(filename string, filetype string, format string, out string, data_dir string) error {
+	version, ok := lib.HasTaxonkit()
+	if !ok {
+		return errors.New("no taxonkit installation could be found :(")
+	} else {
+		log.Printf("Found taxonkit=%s.", version)
+	}
+
+	log.Printf("Mapping taxonomy IDs from %s.", filename)
+
+	infile, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+
+	reader := csv.NewReader(infile)
+	header, err := reader.Read()
+	if err != nil {
+		return err
+	}
+
+	idx := -1
+	for i, v := range header {
+		if v == TaxidIndex[filetype] {
+			idx = i
+			break
+		}
+	}
+	if idx < 0 {
+		return errors.New(
+			"this file does not seem to be of the specified type." +
+				"Are you sure the your '--type' is the correct one?")
+	}
+
+	taxids := make(map[string]bool, 100)
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		taxids[record[idx]] = true
+	}
+
+	log.Printf("Will map %d unique taxids with taxonkit.", len(taxids))
+	lineages := lib.AddLineage(taxids, data_dir, format)
+
+	log.Printf("Writing annotated data to %s.", out)
+
+	infile.Seek(0, io.SeekStart)
+	outfile, err := os.Create(out)
+	if err != nil {
+		return err
+	}
+
+	writer := csv.NewWriter(outfile)
+	header, err = reader.Read()
+	if err != nil {
+		return err
+	}
+	header = append(header, "lineage", "taxid_lineage")
+	err = writer.Write(header)
+	if err != nil {
+		return err
+	}
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		l := *lineages[record[idx]]
+		record = append(record, l.Names, l.Taxids)
+		writer.Write(record)
+	}
+
+	return nil
+}
