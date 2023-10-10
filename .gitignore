@@ -21,4 +21,5 @@
 go.work
 
 # Large data
-data/negative.k2
+testdata/negative.k2
+/*.csv
