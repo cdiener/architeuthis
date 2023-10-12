@@ -44,10 +44,6 @@ The 'lineage' command does require taxonkit and the databases to be installed to
 work.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		filetype, err := cmd.Flags().GetString("type")
-		if err != nil {
-			log.Fatal(err)
-		}
 		format, err := cmd.Flags().GetString("format")
 		if err != nil {
 			log.Fatal(err)
@@ -59,6 +55,13 @@ work.
 		datadir, err := cmd.Flags().GetString("data-dir")
 		if err != nil {
 			log.Fatal(err)
+		}
+		filetype, lineage := lib.GetFormat(args[0])
+		if lineage {
+			log.Fatalf("file %s already contains lineage information", args[0])
+		}
+		if filetype != "bracken" && filetype != "mapping" {
+			log.Fatalf("file %s is not bracken or mapping summary format", args[0])
 		}
 		err = FoldInLineage(args[0], filetype, format, out, datadir)
 		if err != nil {
@@ -79,8 +82,7 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	lineageCmd.Flags().String("data-dir", "", "The path to the taxonomy dumps.")
-	lineageCmd.Flags().StringP("type", "t", "bracken", "The type of the file to be annotated.")
-	lineageCmd.Flags().StringP("format", "f", "{k};{p};{c};{o};{f};{g};{s}", "The format of the files.")
+	lineageCmd.Flags().StringP("format", "f", "{k};{p};{c};{o};{f};{g};{s}", "The format of the add lineage annotations.")
 	lineageCmd.Flags().StringP("out", "o", "annotated.csv", "The filename of the output CSV.")
 }
 

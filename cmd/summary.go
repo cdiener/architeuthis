@@ -33,6 +33,10 @@ var summaryCmd = &cobra.Command{
 across reads. That is particularly helpful to check how unique you assignments are or
 to identify isntances where one taxon can also be classified to another taxon.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		filetype, _ := lib.GetFormat(args[0])
+		if filetype != "kraken2" {
+			log.Fatal("mapping summaries require a Kraken2 file")
+		}
 		id := strings.Split(filepath.Base(args[0]), ".")[0]
 		kmap, err := lib.Summarize(args[0])
 		if err != nil {

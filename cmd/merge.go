@@ -21,6 +21,7 @@ import (
 
 	"github.com/cdiener/architeuthis/lib"
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/slices"
 )
 
 var SimpleFormats = map[string]bool{
@@ -35,28 +36,33 @@ var mergeCmd = &cobra.Command{
 	Short: "Merge various output files related to Kraken.",
 	Long: `This quickly merges Kraken output files across several samples.
 
-This can optionally add in the full lineage if desired with the '--with-lineage'
-option. However this will require a 'taxonkit' installation.`,
+Supported formats are Bracken outout and mapping summaries.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		format, err := cmd.Flags().GetString("format")
-		if err != nil {
-			log.Fatal("Error reading the format argument.")
-		}
 		out, err := cmd.Flags().GetString("out")
 		if err != nil {
 			log.Fatal("Error in reading the output filename.")
 		}
-		is_simple, ok := SimpleFormats[format]
-		if !ok {
-			log.Fatalf(
-				"%s is not a valid format. "+
-					"Please choose from 'bracken', 'mapping, or 'report'.",
-				format)
-		}
 		if len(args) < 1 {
 			log.Fatal("Need at least 2 files to merge.")
 		}
-		if is_simple {
+		formats := make([]string, len(args))
+		for i, fname := range args {
+			f, _ := lib.GetFormat(fname)
+			if f == "" {
+				log.Fatalf("file %s is not recognized as a supported type", fname)
+			}
+			formats[i] = f
+		}
+		formats = slices.Compact(formats)
+		if len(formats) > 1 {
+			log.Fatalf("arguments have differing formats, found the following: %v", formats)
+		}
+
+		if formats[0] == "kraken2" || formats[0] == "report" {
+			log.Fatalf("merging kraken2 output or report files is not supported")
+		}
+
+		if formats[0] == "mapping" || formats[0] == "bracken-merged" {
 			err = lib.SimpleAppend(args, out)
 		} else {
 			err = lib.SampleAppend(args, out)
@@ -78,6 +84,5 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	mergeCmd.Flags().StringP("format", "f", "bracken", "The format of the files to merge.")
 	mergeCmd.Flags().StringP("out", "o", "merged.csv", "The output filename.")
 }
