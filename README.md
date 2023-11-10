@@ -15,7 +15,7 @@ k-mer classifications for reads.
 
 ## Usage
 
-```
+```text
 Usage:
   architeuthis [command]
 
