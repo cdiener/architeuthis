@@ -5,7 +5,7 @@
 > *architeuthis* is named after *Architeuthis dux*, the giant squid. It also sounds
 > like "archi-do-this", so giving instructions to your pet kraken.
 
-*archituthis* is a fast standalone command to supplement the Kraken suite of software tools
+*architeuthis* is a fast standalone command to supplement the Kraken suite of software tools
 such like Kraken2, KrakenUniq, and Bracken. I saw myself repeatedly rewriting the same
 code in my pipelines when dealing with Kraken output, like merging files or maninpulating
 lineage annotations. It also adds some functionality to dive deeper into the individual
