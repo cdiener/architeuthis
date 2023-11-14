@@ -28,24 +28,42 @@ import (
 // summaryCmd represents the summary command
 var summaryCmd = &cobra.Command{
 	Use:   "summary",
-	Short: "Summarize k-mer assignments for classified taxa.",
+	Short: "Summarize k-mer assignments for classified taxa on taxonomic ranks.",
 	Long: `Summarizes all individual k-mer assignments for each classified taxon
-across reads. That is particularly helpful to check how unique you assignments are or
-to identify isntances where one taxon can also be classified to another taxon.`,
+on taxonomic ranks. This allows you to see whether assignments are consistent on
+higher ranks. For instance, even though a taxon might have discordant species
+assignments those might all be within the same family or genus.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		datadir, err := cmd.Flags().GetString("data-dir")
+		if err != nil {
+			log.Fatal(err)
+		}
+		format, err := cmd.Flags().GetString("format")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		version, ok := lib.HasTaxonkit()
+		if !ok {
+			log.Fatal("no taxonkit installation could be found :(")
+		} else {
+			log.Printf("Found taxonkit=%s.", version)
+		}
 		filetype, _ := lib.GetFormat(args[0])
 		if filetype != "kraken2" {
 			log.Fatal("mapping summaries require a Kraken2 file")
 		}
+
 		id := strings.Split(filepath.Base(args[0]), ".")[0]
-		kmap, err := lib.Summarize(args[0])
+		kmap, err := lib.SummarizeKmers(args[0])
 		if err != nil {
-			log.Fatal("Failed to build the mapping hash.")
+			log.Fatal("Failed to build the kmer mapping hash.")
 		}
+		collapsed := lib.CollapseRanks(kmap, datadir, format)
 
 		out, _ := cmd.Flags().GetString("out")
 		log.Printf("Saving map to %s.", out)
-		lib.SaveMapping(kmap, out, id)
+		lib.SaveMapping(collapsed, out, id)
 	},
 }
 
@@ -62,4 +80,6 @@ func init() {
 	// is called directly, e.g.:
 	// summaryCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	summaryCmd.Flags().String("out", "mapping_summary.csv", "The output file (CSV format).")
+	summaryCmd.Flags().String("data-dir", "", "The path to the taxonomy dumps.")
+	summaryCmd.Flags().StringP("format", "f", "{k};{p};{c};{o};{f};{g};{s}", "The format of the add lineage annotations.")
 }

@@ -4,9 +4,8 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 var bracken_header = []string{"name", "taxonomy_id", "taxonomy_lvl",

@@ -23,8 +23,8 @@ import (
 )
 
 type Lineage struct {
-	Names  string
-	Taxids string
+	Names  []string
+	Taxids []string
 }
 
 func HasTaxonkit() (string, bool) {
@@ -66,7 +66,10 @@ func AddLineage[K any](taxids map[string]K, data_dir string, format string) map[
 	results := make(map[string]*Lineage, len(taxids))
 	for _, line := range strings.Split(strings.Trim(out.String(), "\r\n"), "\n") {
 		entries := strings.Split(line, "\t")
-		results[entries[0]] = &Lineage{entries[1], entries[2]}
+		results[entries[0]] = &Lineage{
+			strings.Split(entries[1], ";"),
+			strings.Split(entries[2], ";"),
+		}
 	}
 
 	return results

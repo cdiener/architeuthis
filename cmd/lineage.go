@@ -22,6 +22,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/cdiener/architeuthis/lib"
 	"github.com/spf13/cobra"
@@ -162,7 +163,7 @@ func FoldInLineage(filename string, filetype string, format string, out string, 
 			log.Fatal(err)
 		}
 		l := *lineages[record[idx]]
-		record = append(record, l.Names, l.Taxids)
+		record = append(record, strings.Join(l.Names, ";"), strings.Join(l.Taxids, ";"))
 		writer.Write(record)
 	}
 	writer.Flush()

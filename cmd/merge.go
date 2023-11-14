@@ -19,9 +19,10 @@ package cmd
 import (
 	"log"
 
+	"slices"
+
 	"github.com/cdiener/architeuthis/lib"
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/slices"
 )
 
 var SimpleFormats = map[string]bool{
