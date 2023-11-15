@@ -30,7 +30,7 @@ jobs:
         wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
         tar -xf taxdump.tar.gz
         mkdir $HOME/.taxonkit && cp *.dmp $HOME/.taxonkit/
-        env
+        ls -alh $HOME/go/bin
 
     - name: Test
       run: PATH=$PATH:$HOME/go/bin go test -v ./...
