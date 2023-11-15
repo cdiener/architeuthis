@@ -27,6 +27,7 @@ jobs:
     - name: Install optional dependencies
       run: |
         go get -v github.com/shenwei356/taxonkit/taxonkit
+        go install -v github.com/shenwei356/taxonkit/taxonkit
         wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
         tar -xf taxdump.tar.gz
         mkdir $HOME/.taxonkit && cp *.dmp $HOME/.taxonkit/
