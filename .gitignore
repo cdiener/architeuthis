@@ -23,3 +23,5 @@ go.work
 # Large data
 testdata/negative.k2
 /*.csv
+
+dist/

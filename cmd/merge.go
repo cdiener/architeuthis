@@ -18,7 +18,6 @@ package cmd
 
 import (
 	"log"
-
 	"slices"
 
 	"github.com/cdiener/architeuthis/lib"

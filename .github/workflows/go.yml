@@ -31,7 +31,12 @@ jobs:
         wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
         tar -xf taxdump.tar.gz
         mkdir $HOME/.taxonkit && cp *.dmp $HOME/.taxonkit/
-        ls -alh `go env GOPATH`/bin
+        taxonkit version
 
     - name: Test
       run: go test -v ./...
+
+    - name: Run coverage
+      run: go test -race -coverprofile=coverage.txt -covermode=atomic
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
