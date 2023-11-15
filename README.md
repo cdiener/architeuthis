@@ -2,6 +2,8 @@
 
 [![Go](https://github.com/cdiener/architeuthis/actions/workflows/go.yml/badge.svg)](https://github.com/cdiener/architeuthis/actions/workflows/go.yml)
 
+[![codecov](https://codecov.io/gh/cdiener/architeuthis/graph/badge.svg?token=KIeBFhClXY)](https://codecov.io/gh/cdiener/architeuthis)
+
 > *architeuthis* is named after *Architeuthis dux*, the giant squid. It also sounds
 > like "archi-do-this", so giving instructions to your pet kraken.
 

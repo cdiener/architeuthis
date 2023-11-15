@@ -84,7 +84,9 @@ func ParseMapping(k2map Mapping, line string) error {
 			log.Fatal("Could not parse the k-mer count!")
 			return err
 		}
-		UpdateMapping(entry, taxid, count)
+		if taxid != "0" && taxid != "1" {
+			UpdateMapping(entry, taxid, count)
+		}
 	}
 	return nil
 }
@@ -112,17 +114,29 @@ func SaveMapping(k2map Mapping, filepath string, sample_id string) error {
 	defer mfile.Close()
 	writer := csv.NewWriter(mfile)
 	if has_lineage {
-		writer.Write([]string{"sample_id", "classification", "lineage", "n_reads", "taxid", "n_kmers"})
+		writer.Write([]string{
+			"sample_id", "classification", "lineage", "total_reads",
+			"taxid", "kmers", "in_lineage"})
 	} else {
-		writer.Write([]string{"sample_id", "classification", "n_reads", "taxid", "n_kmers"})
+		writer.Write([]string{
+			"sample_id", "classification", "total_reads",
+			"taxid", "kmers"})
 	}
 	var recs []string
 	for class, v := range k2map {
 		for taxid, n := range v.Classes {
 			if has_lineage {
-				recs = []string{sample_id, class, v.Lineage, strconv.Itoa(v.Reads), taxid, strconv.Itoa(n)}
+				match := 0
+				if strings.Contains(v.Lineage, taxid) {
+					match = 1
+				}
+				recs = []string{
+					sample_id, class, v.Lineage, strconv.Itoa(v.Reads),
+					taxid, strconv.Itoa(n), strconv.Itoa(match)}
 			} else {
-				recs = []string{sample_id, class, strconv.Itoa(v.Reads), taxid, strconv.Itoa(n)}
+				recs = []string{
+					sample_id, class, strconv.Itoa(v.Reads),
+					taxid, strconv.Itoa(n)}
 			}
 			writer.Write(recs)
 		}
@@ -154,9 +168,9 @@ func CollapseRanks(k2map Mapping, data_dir string, format string) Mapping {
 		for cl, cn := range entry.Classes {
 			ref_lineage := lineage[taxid]
 			kmer_lineage := lineage[cl]
-			collapsed[taxid] = ranks
 			matchRanks(ref_lineage, kmer_lineage, cn, ranks)
 		}
+		collapsed[taxid] = ranks
 		ntaxa += 1
 
 		if ntaxa%1e3 == 0 {
@@ -175,14 +189,12 @@ func matchRanks(ref_lineage *Lineage, kmer_lineage *Lineage, count int, entry *T
 			break
 		}
 		i := slices.Index(ref_lineage.Taxids, k)
-		if i >= 0 {
-			ni := ref_lineage.Names[i]
+		if i >= -1 {
+			ni := kmer_lineage.Names[ik]
 			if !emptyTaxon.MatchString(ni) {
 				matched_ranks += 1
 				UpdateMapping(entry, ni, count)
 			}
-		} else {
-			break
 		}
 	}
 
