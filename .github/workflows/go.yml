@@ -26,11 +26,11 @@ jobs:
 
     - name: Install optional dependencies
       run: |
-        go get -v -u github.com/shenwei356/taxonkit/taxonkit
+        go install github.com/shenwei356/taxonkit/taxonkit
         wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
         tar -xf taxdump.tar.gz
         mkdir $HOME/.taxonkit && cp *.dmp $HOME/.taxonkit/
-        ls -alh $HOME/go/bin
+        ls -alh `go env GOPATH`/bin
 
     - name: Test
       run: PATH=$PATH:`go env GOPATH`/bin go test -v ./...
