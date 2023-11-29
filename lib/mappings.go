@@ -22,7 +22,6 @@ import (
 	"log"
 	"os"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 )
@@ -184,18 +183,13 @@ func CollapseRanks(k2map Mapping, data_dir string, format string) Mapping {
 func matchRanks(ref_lineage *Lineage, kmer_lineage *Lineage, count int, entry *Taxon) int {
 	matched_ranks := 0
 	emptyTaxon, _ := regexp.Compile(`[a-z]__$`)
-	for ik, k := range kmer_lineage.Taxids {
-		if emptyTaxon.MatchString(kmer_lineage.Names[ik]) {
+	for i, kn := range kmer_lineage.Names {
+		rn := ref_lineage.Names[i]
+		if emptyTaxon.MatchString(kn) || emptyTaxon.MatchString(rn) || len(rn) == 0 || len(kn) == 0 {
 			break
 		}
-		i := slices.Index(ref_lineage.Taxids, k)
-		if i >= -1 {
-			ni := kmer_lineage.Names[ik]
-			if !emptyTaxon.MatchString(ni) {
-				matched_ranks += 1
-				UpdateMapping(entry, ni, count)
-			}
-		}
+		matched_ranks += 1
+		UpdateMapping(entry, kn, count)
 	}
 
 	return matched_ranks
