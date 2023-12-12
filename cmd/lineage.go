@@ -61,7 +61,7 @@ work.
 		if lineage {
 			log.Fatalf("file %s already contains lineage information", args[0])
 		}
-		if filetype != "bracken" && filetype != "mapping" {
+		if filetype != "bracken" && filetype != "mapping" && filetype != "bracken-merged" {
 			log.Fatalf("file %s is not bracken or mapping summary format", args[0])
 		}
 		err = FoldInLineage(args[0], filetype, format, out, datadir)
@@ -103,6 +103,9 @@ func FoldInLineage(filename string, filetype string, format string, out string, 
 	}
 
 	reader := csv.NewReader(infile)
+	if filetype == "bracken" {
+		reader.Comma = '\t'
+	}
 	header, err := reader.Read()
 	if err != nil {
 		return err
