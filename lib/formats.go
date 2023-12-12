@@ -12,8 +12,7 @@ var bracken_header = []string{"name", "taxonomy_id", "taxonomy_lvl",
 	"kraken_assigned_reads", "added_reads", "new_est_reads",
 	"fraction_total_reads"}
 
-var mappings_header = []string{"sample_id", "classification",
-	"n_reads", "taxid", "n_kmers"}
+var mappings_header = []string{"sample_id", "classification"}
 
 func GetFormat(filename string) (string, bool) {
 	file, err := os.Open(filename)
@@ -53,7 +52,7 @@ func GetFormat(filename string) (string, bool) {
 	}
 
 	if len(csv) >= 5 {
-		if slices.Compare(csv[0:5], mappings_header) == 0 {
+		if slices.Compare(csv[0:2], mappings_header) == 0 {
 			return "mapping", has_lineage
 		}
 	}
