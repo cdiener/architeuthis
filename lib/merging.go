@@ -66,7 +66,7 @@ func SimpleAppend(files []string, out string) error {
 	return nil
 }
 
-func SampleAppend(files []string, out string) error {
+func SampleAppend(files []string, out string, sep rune) error {
 	merged, err := os.Create(out)
 	if err != nil {
 		return err
@@ -84,6 +84,7 @@ func SampleAppend(files []string, out string) error {
 			return err
 		}
 		reader := csv.NewReader(fi)
+		reader.Comma = sep
 		header, err := reader.Read()
 		if err != nil {
 			fi.Close()
@@ -91,6 +92,12 @@ func SampleAppend(files []string, out string) error {
 		}
 		if i == 0 {
 			n_elems = len(header)
+			field[0] = "sample_id"
+			header = append(field, header...)
+			err = writer.Write(header)
+			if err != nil {
+				return err
+			}
 		}
 		if (i > 0) && (len(header) != n_elems) {
 			return fmt.Errorf(
@@ -98,12 +105,6 @@ func SampleAppend(files []string, out string) error {
 					"Are you sure all files have the same format?",
 				file,
 			)
-		}
-		field[0] = "sample_id"
-		header = append(field, header...)
-		err = writer.Write(header)
-		if err != nil {
-			return err
 		}
 		field[0] = sample_id
 		for {

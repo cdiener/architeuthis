@@ -42,14 +42,16 @@ func GetFormat(filename string) (string, bool) {
 		return "report", has_lineage
 	}
 
-	if len(csv) >= 7 {
-		if slices.Compare(csv[0:7], bracken_header) == 0 {
-			return "bracken", has_lineage
-		}
-		if slices.Compare(csv[1:7], bracken_header[0:6]) == 0 && csv[0] == "sample_id" {
-			return "bracken-merged", has_lineage
-		}
+	if (len(tsv) >= 7) && (slices.Compare(tsv[0:7], bracken_header) == 0) {
+		return "bracken", has_lineage
 	}
+
+	if (len(csv) >= 7) &&
+		slices.Compare(csv[1:7], bracken_header[0:6]) == 0 &&
+		csv[0] == "sample_id" {
+		return "bracken-merged", has_lineage
+	}
+
 	if len(csv) >= 5 {
 		if slices.Compare(csv[0:5], mappings_header) == 0 {
 			return "mapping", has_lineage

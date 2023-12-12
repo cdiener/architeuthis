@@ -115,7 +115,7 @@ func SaveMapping(k2map Mapping, filepath string, sample_id string) error {
 	if has_lineage {
 		writer.Write([]string{
 			"sample_id", "classification", "lineage", "total_reads",
-			"taxid", "kmers", "in_lineage"})
+			"name", "rank", "kmers", "in_lineage"})
 	} else {
 		writer.Write([]string{
 			"sample_id", "classification", "total_reads",
@@ -129,9 +129,10 @@ func SaveMapping(k2map Mapping, filepath string, sample_id string) error {
 				if strings.Contains(v.Lineage, taxid) {
 					match = 1
 				}
+				rank := strings.Split(taxid, "__")[0]
 				recs = []string{
 					sample_id, class, v.Lineage, strconv.Itoa(v.Reads),
-					taxid, strconv.Itoa(n), strconv.Itoa(match)}
+					taxid, rank, strconv.Itoa(n), strconv.Itoa(match)}
 			} else {
 				recs = []string{
 					sample_id, class, strconv.Itoa(v.Reads),

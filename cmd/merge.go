@@ -26,6 +26,7 @@ import (
 
 var SimpleFormats = map[string]bool{
 	"bracken": false,
+	"kraken":  true,
 	"mapping": true,
 	"report":  false,
 }
@@ -36,7 +37,7 @@ var mergeCmd = &cobra.Command{
 	Short: "Merge various output files related to Kraken.",
 	Long: `This quickly merges Kraken output files across several samples.
 
-Supported formats are Bracken outout and mapping summaries.`,
+Supported formats are Bracken output and mapping summaries.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		out, err := cmd.Flags().GetString("out")
 		if err != nil {
@@ -58,14 +59,16 @@ Supported formats are Bracken outout and mapping summaries.`,
 			log.Fatalf("arguments have differing formats, found the following: %v", formats)
 		}
 
-		if formats[0] == "kraken2" || formats[0] == "report" {
-			log.Fatalf("merging kraken2 output or report files is not supported")
+		log.Printf("Detected format for files is '%s'.", formats[0])
+
+		if formats[0] == "report" {
+			log.Fatalf("merging kraken2 report files is not supported")
 		}
 
-		if formats[0] == "mapping" || formats[0] == "bracken-merged" {
+		if formats[0] == "kraken" || formats[0] == "mapping" || formats[0] == "bracken-merged" {
 			err = lib.SimpleAppend(args, out)
-		} else {
-			err = lib.SampleAppend(args, out)
+		} else if formats[0] == "bracken" {
+			err = lib.SampleAppend(args, out, '\t')
 		}
 		if err != nil {
 			log.Fatal(err)

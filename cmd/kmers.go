@@ -31,7 +31,7 @@ var kmersCmd = &cobra.Command{
 	Short: "Summarize k-mer assignments for classified taxa.",
 	Long: `Summarizes all individual k-mer assignments for each classified taxon
 across reads. That is particularly helpful to check how unique you assignments are or
-to identify instances where one taxon can also be classified to another taxon.`,
+to identify instances where one taxon can also be classified as another taxon.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		filetype, _ := lib.GetFormat(args[0])
 		if filetype != "kraken2" {
