@@ -1,0 +1,5 @@
+name	taxonomy_id	taxonomy_lvl	kraken_assigned_reads	added_reads	new_est_reads	fraction_total_reads
+Bacteroides	816	G	2035880	186884	2222764	0.23147
+Phocaeicola	909656	G	1326319	152556	1478875	0.15400
+Prevotella	838	G	1006964	25055	1032019	0.10747
+Paraprevotella	577309	G	45310	1833	47143	0.00491
