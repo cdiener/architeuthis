@@ -17,6 +17,7 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -42,6 +43,11 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
+}
+
+func SetVersion(version string, commit string, date string) {
+	rootCmd.Version = fmt.Sprintf(
+		"%s\nbuilt: %s \ncommit: %s\n", version, date, commit)
 }
 
 func init() {
