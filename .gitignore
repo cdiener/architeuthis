@@ -23,6 +23,7 @@ go.work
 # Large data
 testdata/negative.k2
 /*.csv
+filtered.k2
 
 dist/
 architeuthis

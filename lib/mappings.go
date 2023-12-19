@@ -19,9 +19,12 @@ package lib
 import (
 	"bufio"
 	"encoding/csv"
+	"fmt"
 	"log"
+	"math"
 	"os"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -30,6 +33,16 @@ type Taxon struct {
 	Lineage string
 	Reads   int
 	Classes map[string]int
+}
+
+type ReadScore struct {
+	TaxonName    string
+	TaxonID      uint32
+	ID           string
+	Kmers        uint32
+	Consistency  float64
+	Multiplicity uint32
+	Entropy      float64
 }
 
 type Mapping map[string]*Taxon
@@ -62,6 +75,231 @@ func SummarizeKmers(filepath string) (Mapping, error) {
 	return k2map, nil
 }
 
+func Entropy(abundances map[string]uint32) float64 {
+	total := 0.0
+	ent := 0.0
+	for _, cn := range abundances {
+		total += float64(cn)
+	}
+	for _, cn := range abundances {
+		p := float64(cn) / total
+		ent -= p * math.Log(p)
+	}
+	return ent
+}
+
+func Multiplicity(abundances map[string]uint32) uint32 {
+	return uint32(len(abundances))
+}
+
+func ScoreRead(line string, taxondb map[string]*Lineage) *ReadScore {
+	tokens := strings.Split(strings.Trim(line, " "), "\t")
+	if tokens[0] != "C" {
+		return nil
+	}
+	taxid, err := strconv.Atoi(tokens[2])
+	if err != nil {
+		log.Fatalf("Could not parse taxon ID %s for read %s.", tokens[1], tokens[2])
+	}
+	lin := taxondb[tokens[2]]
+	ridx, leaf := GetLeaf(lin)
+	if ridx == -1 {
+		return nil
+	}
+
+	// Get classifications
+	abundances := make(map[string]uint32)
+	consistent := 0
+	classified := 0
+	for _, s := range strings.Split(tokens[4], " ") {
+		splits := strings.Split(s, ":")
+		if splits[0] == "|" || splits[0] == "A" {
+			continue
+		}
+		tid, err := strconv.Atoi(splits[0])
+		cn, err2 := strconv.Atoi(splits[1])
+		if err != nil || err2 != nil {
+			log.Fatalf("Could not parse taxon ID %s:%s.", splits[0], splits[1])
+		}
+
+		if tid > 1 {
+			kmer_lin := taxondb[splits[0]]
+			idx, name := GetLeaf(kmer_lin)
+			if idx == -1 {
+				continue
+			}
+			if idx > ridx {
+				name = kmer_lin.Names[ridx]
+			}
+			if idx >= ridx {
+				_, ok := abundances[name]
+				if ok {
+					abundances[name] += uint32(cn)
+				} else {
+					abundances[name] = uint32(cn)
+				}
+			}
+			classified += cn
+			if slices.Contains(lin.Names, name) {
+				consistent += cn
+			}
+		}
+	}
+
+	score := ReadScore{
+		ID:           tokens[1],
+		TaxonID:      uint32(taxid),
+		TaxonName:    leaf,
+		Entropy:      Entropy(abundances),
+		Multiplicity: Multiplicity(abundances),
+		Kmers:        uint32(classified),
+		Consistency:  float64(consistent) / float64(classified),
+	}
+
+	return &score
+}
+
+func ScoreReadsToFile(k2path string, out string, data_dir string, format string) error {
+	// Set up Kraken reader
+	sample_id := strings.Split(k2path, ".")[0]
+	k2file, err := os.Open(k2path)
+	if err != nil {
+		log.Fatalf("Could not open %s. Does this file exist?", k2path)
+	}
+	defer k2file.Close()
+
+	// Set up output
+	sfile, err := os.Create(out)
+	if err != nil {
+		return err
+	}
+	defer sfile.Close()
+	writer := csv.NewWriter(sfile)
+	header := []string{
+		"sample_id", "read_id", "taxid", "name", "rank", "n_kmers", "consistency", "multiplicity", "entropy"}
+	writer.Write(header)
+
+	log.Println("Pass 1: Building the taxa database...")
+	taxondb, _ := TaxonDB(k2path, data_dir, format)
+
+	reads := 0
+	scanner := bufio.NewScanner(k2file)
+
+	log.Println("Pass 2: Score individuals reads...")
+	log.Printf("Reading k-mer assignments from %s an dwriting to %s.", k2path, out)
+	for scanner.Scan() {
+		s := ScoreRead(scanner.Text(), taxondb)
+		if s == nil {
+			continue
+		}
+		record := []string{
+			sample_id, s.ID, strconv.Itoa(int(s.TaxonID)), s.TaxonName,
+			strings.Split(s.TaxonName, "__")[0], strconv.Itoa(int(s.Kmers)),
+			fmt.Sprint(s.Consistency), strconv.Itoa(int(s.Multiplicity)),
+			fmt.Sprint(s.Entropy),
+		}
+		writer.Write(record)
+
+		reads += 1
+		if reads%1e6 == 0 {
+			log.Printf("Processed %d reads...", reads)
+		}
+	}
+	log.Printf("Processing %d reads - Done.", reads)
+	writer.Flush()
+
+	return nil
+}
+
+func FilterReads(k2path string, out string, data_dir string,
+	format string, min_consistency float64, max_entropy float64, max_multiplicity uint32) error {
+	// Set up Kraken reader
+	k2file, err := os.Open(k2path)
+	if err != nil {
+		log.Fatalf("Could not open %s. Does this file exist?", k2path)
+	}
+	defer k2file.Close()
+
+	// Set up output
+	sfile, err := os.Create(out)
+	if err != nil {
+		return err
+	}
+	defer sfile.Close()
+	writer := bufio.NewWriter(sfile)
+
+	log.Println("Pass 1: Building the taxa database...")
+	taxondb, _ := TaxonDB(k2path, data_dir, format)
+
+	reads := 0
+	passed := 0
+
+	scanner := bufio.NewScanner(k2file)
+
+	log.Println("Pass 2: Score individuals reads...")
+	log.Printf("Reading k-mer assignments from %s an dwriting to %s.", k2path, out)
+	for scanner.Scan() {
+		s := ScoreRead(scanner.Text(), taxondb)
+		reads += 1
+		if s == nil || s.Consistency < min_consistency ||
+			s.Entropy > max_entropy || s.Multiplicity > max_multiplicity {
+			continue
+		}
+		writer.Write(scanner.Bytes())
+
+		passed += 1
+		if reads%1e6 == 0 {
+			log.Printf("Processed %d reads...", reads)
+		}
+	}
+	log.Printf("Processing %d reads - Done. %d/%d reads passed the filter.",
+		reads, passed, reads)
+	writer.Flush()
+
+	return nil
+}
+
+func TaxonDB(filepath string, data_dir string, format string) (map[string]*Lineage, int) {
+	k2file, err := os.Open(filepath)
+	if err != nil {
+		log.Fatalf("Could not open %s. Does this file exist?", filepath)
+	}
+	defer k2file.Close()
+
+	reads := 0
+	scanner := bufio.NewScanner(k2file)
+	taxids := make(map[string]bool, 1e4)
+
+	log.Printf("Reading k-mer assignments from %s.", filepath)
+	for scanner.Scan() {
+		tokens := strings.Split(strings.Trim(scanner.Text(), " "), "\t")
+		if tokens[0] != "C" {
+			continue
+		}
+		taxids[tokens[2]] = true
+
+		for _, s := range strings.Split(tokens[4], " ") {
+			splits := strings.Split(s, ":")
+			if splits[0] == "|" || splits[0] == "A" {
+				continue
+			}
+			tid := splits[0]
+			if tid != "0" && tid != "1" {
+				taxids[tid] = true
+			}
+		}
+		reads += 1
+		if reads%1e6 == 0 {
+			log.Printf("Processed %d reads...", reads)
+		}
+	}
+	log.Printf("Processing %d reads - Done.", reads)
+
+	lineages := AddLineage(taxids, data_dir, format)
+
+	return lineages, reads
+}
+
 func ParseMapping(k2map Mapping, line string) error {
 	tokens := strings.Split(strings.Trim(line, " "), "\t")
 
@@ -74,7 +312,7 @@ func ParseMapping(k2map Mapping, line string) error {
 
 	for _, s := range strings.Split(tokens[4], " ") {
 		splits := strings.Split(s, ":")
-		if splits[0] == "|" {
+		if splits[0] == "|" || splits[0] == "A" {
 			continue
 		}
 		taxid := splits[0]

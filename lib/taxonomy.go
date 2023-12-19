@@ -19,6 +19,7 @@ package lib
 import (
 	"log"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
@@ -73,4 +74,30 @@ func AddLineage[K any](taxids map[string]K, data_dir string, format string) map[
 	}
 
 	return results
+}
+
+func GetRanks(format string) []string {
+	re := regexp.MustCompile(`{(\w)}`)
+	var r []string
+	for _, match := range re.FindAllStringSubmatch(format, -1) {
+		if match[1] == "" {
+			log.Fatalf("Incorrect format term %s.", match[0])
+		}
+		r = append(r, match[1])
+	}
+	return r
+}
+
+func GetLeaf(lin *Lineage) (int, string) {
+	emptyTaxon, _ := regexp.Compile(`[a-z]__$`)
+	leaf := ""
+	idx := -1
+	for i, s := range lin.Names {
+		if emptyTaxon.MatchString(s) {
+			break
+		}
+		idx = i
+		leaf = s
+	}
+	return idx, leaf
 }
