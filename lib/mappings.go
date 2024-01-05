@@ -23,7 +23,6 @@ import (
 	"log"
 	"math"
 	"os"
-	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -41,6 +40,7 @@ type ReadScore struct {
 	ID           string
 	Kmers        uint32
 	Consistency  float64
+	Confidence   float64
 	Multiplicity uint32
 	Entropy      float64
 }
@@ -92,6 +92,20 @@ func Multiplicity(abundances map[string]uint32) uint32 {
 	return uint32(len(abundances))
 }
 
+func Confidence(abundances map[string]uint32, classification string) float64 {
+	total := 0.0
+	for _, cn := range abundances {
+		total += float64(cn)
+	}
+	var cn uint32
+	cn, ok := abundances[classification]
+	if !ok {
+		cn = 0
+	}
+
+	return float64(cn) / total
+}
+
 func ScoreRead(line string, taxondb map[string]*Lineage) *ReadScore {
 	tokens := strings.Split(strings.Trim(line, " "), "\t")
 	if tokens[0] != "C" {
@@ -111,8 +125,9 @@ func ScoreRead(line string, taxondb map[string]*Lineage) *ReadScore {
 	abundances := make(map[string]uint32)
 	consistent := 0
 	classified := 0
+	var splits []string
 	for _, s := range strings.Split(tokens[4], " ") {
-		splits := strings.Split(s, ":")
+		splits = strings.SplitN(s, ":", 2)
 		if splits[0] == "|" || splits[0] == "A" {
 			continue
 		}
@@ -154,6 +169,7 @@ func ScoreRead(line string, taxondb map[string]*Lineage) *ReadScore {
 		Multiplicity: Multiplicity(abundances),
 		Kmers:        uint32(classified),
 		Consistency:  float64(consistent) / float64(classified),
+		Confidence:   Confidence(abundances, leaf),
 	}
 
 	return &score
@@ -176,7 +192,8 @@ func ScoreReadsToFile(k2path string, out string, data_dir string, format string)
 	defer sfile.Close()
 	writer := csv.NewWriter(sfile)
 	header := []string{
-		"sample_id", "read_id", "taxid", "name", "rank", "n_kmers", "consistency", "multiplicity", "entropy"}
+		"sample_id", "read_id", "taxid", "name", "rank", "n_kmers",
+		"consistency", "confidence", "multiplicity", "entropy"}
 	writer.Write(header)
 
 	log.Println("Pass 1: Building the taxa database...")
@@ -195,8 +212,8 @@ func ScoreReadsToFile(k2path string, out string, data_dir string, format string)
 		record := []string{
 			sample_id, s.ID, strconv.Itoa(int(s.TaxonID)), s.TaxonName,
 			strings.Split(s.TaxonName, "__")[0], strconv.Itoa(int(s.Kmers)),
-			fmt.Sprint(s.Consistency), strconv.Itoa(int(s.Multiplicity)),
-			fmt.Sprint(s.Entropy),
+			fmt.Sprint(s.Consistency), fmt.Sprint(s.Confidence),
+			strconv.Itoa(int(s.Multiplicity)), fmt.Sprint(s.Entropy),
 		}
 		writer.Write(record)
 
@@ -246,6 +263,7 @@ func FilterReads(k2path string, out string, data_dir string,
 			continue
 		}
 		writer.Write(scanner.Bytes())
+		writer.WriteRune('\n')
 
 		passed += 1
 		if reads%1e6 == 0 {
@@ -311,7 +329,7 @@ func ParseMapping(k2map Mapping, line string) error {
 	entry.Reads += 1
 
 	for _, s := range strings.Split(tokens[4], " ") {
-		splits := strings.Split(s, ":")
+		splits := strings.SplitN(s, ":", 2)
 		if splits[0] == "|" || splits[0] == "A" {
 			continue
 		}
@@ -421,10 +439,9 @@ func CollapseRanks(k2map Mapping, data_dir string, format string) Mapping {
 
 func matchRanks(ref_lineage *Lineage, kmer_lineage *Lineage, count int, entry *Taxon) int {
 	matched_ranks := 0
-	emptyTaxon, _ := regexp.Compile(`[a-z]__$`)
 	for i, kn := range kmer_lineage.Names {
 		rn := ref_lineage.Names[i]
-		if emptyTaxon.MatchString(kn) || emptyTaxon.MatchString(rn) || len(rn) == 0 || len(kn) == 0 {
+		if len(kn) < 4 || len(rn) < 4 {
 			break
 		}
 		matched_ranks += 1

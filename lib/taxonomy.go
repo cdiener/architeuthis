@@ -89,11 +89,10 @@ func GetRanks(format string) []string {
 }
 
 func GetLeaf(lin *Lineage) (int, string) {
-	emptyTaxon, _ := regexp.Compile(`[a-z]__$`)
 	leaf := ""
 	idx := -1
 	for i, s := range lin.Names {
-		if emptyTaxon.MatchString(s) {
+		if len(s) <= 3 {
 			break
 		}
 		idx = i

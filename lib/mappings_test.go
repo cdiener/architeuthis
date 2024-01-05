@@ -1,11 +1,29 @@
 package lib
 
 import (
+	"bufio"
 	"bytes"
 	"log"
+	"os"
 	"path/filepath"
 	"testing"
 )
+
+var taxondb map[string]*Lineage
+var lines []string
+
+func init() {
+	filename := filepath.Join("..", "testdata", "test.k2")
+	taxondb, _ = TaxonDB(filename, "", "{k};{p};{c};{o};{f};{g};{s}")
+
+	lines = make([]string, 100)
+	k2file, _ := os.Open(filename)
+	scanner := bufio.NewScanner(k2file)
+	for i := 0; i < 100; i++ {
+		scanner.Scan()
+		lines[i] = scanner.Text()
+	}
+}
 
 func TestKmers(t *testing.T) {
 	filename := filepath.Join("..", "testdata", "test.k2")
@@ -37,6 +55,32 @@ func TestCollapse(t *testing.T) {
 		t.Errorf("Expected %q in ranks got %q.", "k__Bacteria", c.Classes)
 	} else if bac <= 0 {
 		t.Errorf("Expected positive bacteria counts got %q.", bac)
+	}
+}
+
+func TestScoring(t *testing.T) {
+	if len(lines) < 10 {
+		t.Error("Not initialized.")
+	}
+	for i := 0; i < 10; i++ {
+		score := ScoreRead(lines[i], taxondb)
+		if score.Consistency > 1 || score.Consistency < 0 {
+			t.Errorf("Got invalid consistency score: %f", score.Consistency)
+		}
+
+		if score.Entropy < 0 {
+			t.Errorf("Got invalid entropy score: %f", score.Entropy)
+		}
+
+		if score.Confidence > 1 || score.Confidence < 0.1 {
+			t.Errorf("Got invalid confidence score: %f", score.Consistency)
+		}
+	}
+}
+
+func BenchmarkScoring(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		ScoreRead(lines[n%100], taxondb)
 	}
 }
 
