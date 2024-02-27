@@ -65,6 +65,10 @@ func AddLineage[K any](taxids map[string]K, data_dir string, format string) map[
 	}
 
 	results := make(map[string]*Lineage, len(taxids))
+	if len(taxids) == 0 {
+		log.Println("No taxids to classify.")
+		return results
+	}
 	for _, line := range strings.Split(strings.Trim(out.String(), "\r\n"), "\n") {
 		entries := strings.Split(line, "\t")
 		results[entries[0]] = &Lineage{

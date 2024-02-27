@@ -254,7 +254,7 @@ func FilterReads(k2path string, out string, data_dir string,
 	scanner := bufio.NewScanner(k2file)
 
 	log.Println("Pass 2: Score individuals reads...")
-	log.Printf("Reading k-mer assignments from %s an dwriting to %s.", k2path, out)
+	log.Printf("Reading k-mer assignments from %s and writing to %s.", k2path, out)
 	for scanner.Scan() {
 		s := ScoreRead(scanner.Text(), taxondb)
 		reads += 1
