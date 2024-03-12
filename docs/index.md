@@ -1,4 +1,4 @@
-<img src="docs/architeuthis.webp" width="60%">
+<img src="architeuthis.webp" width="60%">
 
 [![Go](https://github.com/cdiener/architeuthis/actions/workflows/go.yml/badge.svg)](https://github.com/cdiener/architeuthis/actions/workflows/go.yml)
 [![codecov](https://codecov.io/gh/cdiener/architeuthis/graph/badge.svg?token=KIeBFhClXY)](https://codecov.io/gh/cdiener/architeuthis)
@@ -24,7 +24,7 @@ k-mer classifications for reads.
     - multiple mappings on the final taxonomic rank
     - mapping entropy on the final taxonomic rank
 
-## Overview
+## Usage
 
 ```text
 Usage:
@@ -41,5 +41,3 @@ Flags:
       --db string   path to the Kraken database [optional]
   -h, --help        help for architeuthis
 ```
-
-More in the [documentation](https://cdiener.github.io/architeuthis).
