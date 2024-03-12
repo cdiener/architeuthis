@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://cdiener.github.io/architeuthis/</loc>
+         <lastmod>2024-03-12</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cdiener.github.io/architeuthis/filter/</loc>
+         <lastmod>2024-03-12</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cdiener.github.io/architeuthis/install/</loc>
+         <lastmod>2024-03-12</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cdiener.github.io/architeuthis/lineage/</loc>
+         <lastmod>2024-03-12</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cdiener.github.io/architeuthis/mapping/</loc>
+         <lastmod>2024-03-12</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://cdiener.github.io/architeuthis/merge/</loc>
+         <lastmod>2024-03-12</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+</urlset>
