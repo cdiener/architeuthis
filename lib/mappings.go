@@ -48,7 +48,7 @@ type ReadScore struct {
 type Mapping map[string]*Taxon
 
 // Summarize combines
-func SummarizeKmers(filepath string) (Mapping, error) {
+func SummarizeKmers(filepath string, named bool) (Mapping, error) {
 	k2file, err := os.Open(filepath)
 	if err != nil {
 		log.Fatal(err)
@@ -61,7 +61,7 @@ func SummarizeKmers(filepath string) (Mapping, error) {
 	scanner := bufio.NewScanner(k2file)
 	log.Printf("Reading k-mer assignments from %s.", filepath)
 	for scanner.Scan() {
-		err := ParseMapping(k2map, scanner.Text())
+		err := ParseMapping(k2map, scanner.Text(), named)
 		if err != nil {
 			log.Fatal(err)
 			return nil, err
@@ -106,16 +106,29 @@ func Confidence(abundances map[string]uint32, classification string) float64 {
 	return float64(cn) / total
 }
 
-func ScoreRead(line string, taxondb map[string]*Lineage) *ReadScore {
+func TaxID(token string, named bool) string {
+	if named {
+		split := strings.SplitN(token, "(taxid ", 2)
+		if len(split) != 2 {
+			log.Fatalf("Could not parse taxon name %s.", token)
+		}
+		return strings.Trim(split[1], " )")
+	}
+
+	return token
+}
+
+func ScoreRead(line string, taxondb map[string]*Lineage, named bool) *ReadScore {
 	tokens := strings.Split(strings.Trim(line, " "), "\t")
 	if tokens[0] != "C" {
 		return nil
 	}
-	taxid, err := strconv.Atoi(tokens[2])
+	taxid := TaxID(tokens[2], named)
+	taxid_int, err := strconv.Atoi(taxid)
 	if err != nil {
-		log.Fatalf("Could not parse taxon ID %s for read %s.", tokens[1], tokens[2])
+		log.Fatalf("Uh-oh I thought taxon ID %s was numeric.", taxid)
 	}
-	lin := taxondb[tokens[2]]
+	lin := taxondb[taxid]
 	ridx, leaf := GetLeaf(lin)
 	if ridx == -1 {
 		return nil
@@ -163,7 +176,7 @@ func ScoreRead(line string, taxondb map[string]*Lineage) *ReadScore {
 
 	score := ReadScore{
 		ID:           tokens[1],
-		TaxonID:      uint32(taxid),
+		TaxonID:      uint32(taxid_int),
 		TaxonName:    leaf,
 		Entropy:      Entropy(abundances),
 		Multiplicity: Multiplicity(abundances),
@@ -175,7 +188,7 @@ func ScoreRead(line string, taxondb map[string]*Lineage) *ReadScore {
 	return &score
 }
 
-func ScoreReadsToFile(k2path string, out string, data_dir string, format string) error {
+func ScoreReadsToFile(k2path string, out string, data_dir string, format string, named bool) error {
 	// Set up Kraken reader
 	sample_id := strings.Split(k2path, ".")[0]
 	k2file, err := os.Open(k2path)
@@ -197,7 +210,7 @@ func ScoreReadsToFile(k2path string, out string, data_dir string, format string)
 	writer.Write(header)
 
 	log.Println("Pass 1: Building the taxa database...")
-	taxondb, _ := TaxonDB(k2path, data_dir, format)
+	taxondb, _ := TaxonDB(k2path, data_dir, format, named)
 
 	reads := 0
 	scanner := bufio.NewScanner(k2file)
@@ -205,7 +218,7 @@ func ScoreReadsToFile(k2path string, out string, data_dir string, format string)
 	log.Println("Pass 2: Score individuals reads...")
 	log.Printf("Reading k-mer assignments from %s an dwriting to %s.", k2path, out)
 	for scanner.Scan() {
-		s := ScoreRead(scanner.Text(), taxondb)
+		s := ScoreRead(scanner.Text(), taxondb, named)
 		if s == nil {
 			continue
 		}
@@ -229,7 +242,7 @@ func ScoreReadsToFile(k2path string, out string, data_dir string, format string)
 }
 
 func FilterReads(k2path string, out string, data_dir string,
-	format string, min_consistency float64, max_entropy float64, max_multiplicity uint32) error {
+	format string, named bool, min_consistency float64, max_entropy float64, max_multiplicity uint32) error {
 	// Set up Kraken reader
 	k2file, err := os.Open(k2path)
 	if err != nil {
@@ -246,7 +259,7 @@ func FilterReads(k2path string, out string, data_dir string,
 	writer := bufio.NewWriter(sfile)
 
 	log.Println("Pass 1: Building the taxa database...")
-	taxondb, _ := TaxonDB(k2path, data_dir, format)
+	taxondb, _ := TaxonDB(k2path, data_dir, format, named)
 
 	reads := 0
 	passed := 0
@@ -256,7 +269,7 @@ func FilterReads(k2path string, out string, data_dir string,
 	log.Println("Pass 2: Score individuals reads...")
 	log.Printf("Reading k-mer assignments from %s and writing to %s.", k2path, out)
 	for scanner.Scan() {
-		s := ScoreRead(scanner.Text(), taxondb)
+		s := ScoreRead(scanner.Text(), taxondb, named)
 		reads += 1
 		if s == nil || s.Consistency < min_consistency ||
 			s.Entropy > max_entropy || s.Multiplicity > max_multiplicity {
@@ -277,7 +290,7 @@ func FilterReads(k2path string, out string, data_dir string,
 	return nil
 }
 
-func TaxonDB(filepath string, data_dir string, format string) (map[string]*Lineage, int) {
+func TaxonDB(filepath string, data_dir string, format string, named bool) (map[string]*Lineage, int) {
 	k2file, err := os.Open(filepath)
 	if err != nil {
 		log.Fatalf("Could not open %s. Does this file exist?", filepath)
@@ -294,7 +307,8 @@ func TaxonDB(filepath string, data_dir string, format string) (map[string]*Linea
 		if tokens[0] != "C" {
 			continue
 		}
-		taxids[tokens[2]] = true
+		tid := TaxID(tokens[2], named)
+		taxids[tid] = true
 
 		for _, s := range strings.Split(tokens[4], " ") {
 			splits := strings.Split(s, ":")
@@ -318,13 +332,14 @@ func TaxonDB(filepath string, data_dir string, format string) (map[string]*Linea
 	return lineages, reads
 }
 
-func ParseMapping(k2map Mapping, line string) error {
+func ParseMapping(k2map Mapping, line string, named bool) error {
 	tokens := strings.Split(strings.Trim(line, " "), "\t")
-
-	entry, ok := k2map[tokens[2]]
+	tid := TaxID(tokens[2], named)
+	entry, ok := k2map[tid]
 	if !ok {
 		entry = &Taxon{Lineage: "", Reads: 0, Classes: make(map[string]int)}
-		k2map[tokens[2]] = entry
+
+		k2map[tid] = entry
 	}
 	entry.Reads += 1
 

@@ -33,12 +33,15 @@ var kmersCmd = &cobra.Command{
 across reads. That is particularly helpful to check how unique you assignments are or
 to identify instances where one taxon can also be classified as another taxon.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		filetype, _ := lib.GetFormat(args[0])
+		filetype, named := lib.GetFormat(args[0])
 		if filetype != "kraken2" {
 			log.Fatal("mapping summaries require a Kraken2 file")
 		}
+		if named {
+			log.Println("detected Kraken2 output with taxon names.")
+		}
 		id := strings.Split(filepath.Base(args[0]), ".")[0]
-		kmap, err := lib.SummarizeKmers(args[0])
+		kmap, err := lib.SummarizeKmers(args[0], named)
 		if err != nil {
 			log.Fatal("Failed to build the mapping hash.")
 		}

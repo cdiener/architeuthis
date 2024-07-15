@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -34,7 +35,10 @@ func GetFormat(filename string) (string, bool) {
 
 	has_lineage := slices.Contains(csv, "lineage") && slices.Contains(csv, "taxid_lineage")
 	if ((tsv[0] == "C") || (tsv[0] == "U")) && len(tsv) == 5 {
-		return "kraken2", has_lineage
+		if _, err := strconv.Atoi(tsv[2]); err == nil {
+			return "kraken2", false
+		}
+		return "kraken2", true
 	}
 
 	if (len(tsv) == 6) && (tsv[3] == "U") && (tsv[5] == "unclassified") {

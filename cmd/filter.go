@@ -67,14 +67,17 @@ abundance of kmers into account as well).`,
 		} else {
 			log.Printf("Found taxonkit=%s.", version)
 		}
-		filetype, _ := lib.GetFormat(args[0])
+		filetype, named := lib.GetFormat(args[0])
 		if filetype != "kraken2" {
 			log.Fatal("read scoring requires a Kraken2 file.")
+		}
+		if named {
+			log.Println("detected Kraken2 output with taxon names.")
 		}
 
 		out, _ := cmd.Flags().GetString("out")
 
-		err = lib.FilterReads(args[0], out, datadir, "{k};{p};{c};{o};{f};{g};{s}",
+		err = lib.FilterReads(args[0], out, datadir, "{k};{p};{c};{o};{f};{g};{s}", named,
 			min_consistency, max_entropy, max_multiplicity)
 
 		if err != nil {

@@ -1,0 +1,67 @@
+ 91.08	481789	481789	U	0	unclassified
+  8.92	47180	20	R	1	root
+  8.92	47160	1775	R1	59	  Bacteria
+  8.58	45361	0	P	82	    Firmicutes
+  8.58	45361	527	C	83	      Bacilli
+  8.46	44727	203	O	88	        Lactobacillales
+  8.40	44407	215	F	133	          Streptococcaceae
+  8.34	44110	11203	G	134	            Streptococcus
+  6.10	32261	32261	S	5539	              Streptococcus thermophilus
+  0.04	213	213	S	318	              Streptococcus salivarius
+  0.02	98	98	S	1108	              Streptococcus vestibularis
+  0.02	82	82	S	6007	              Streptococcus sp001556435
+  0.01	67	67	S	4429	              Streptococcus alactolyticus
+  0.01	41	41	S	2054	              Streptococcus gordonii
+  0.01	29	29	S	1709	              Streptococcus sp000187445
+  0.00	26	26	S	3863	              Streptococcus peroris
+  0.00	24	24	S	3575	              Streptococcus oralis_W
+  0.00	14	14	S	2008	              Streptococcus infantarius
+  0.00	9	9	S	1976	              Streptococcus sp900543065
+  0.00	9	9	S	1954	              Streptococcus sp902373455
+  0.00	8	8	S	453	              Streptococcus parasanguinis_B
+  0.00	6	6	S	4882	              Streptococcus oralis_E
+  0.00	4	4	S	3887	              MGYG000002843
+  0.00	4	4	S	2077	              Streptococcus equinus
+  0.00	4	4	S	4472	              Streptococcus mitis
+  0.00	3	3	S	5515	              Streptococcus constellatus
+  0.00	3	3	S	5988	              Streptococcus sobrinus
+  0.00	1	1	S	1704	              Streptococcus sp900755085
+  0.00	1	1	S	2209	              Streptococcus sp000411475
+  0.02	82	0	G	1249	            Lactococcus_A
+  0.02	82	82	S	1250	              Lactococcus_A raffinolactis
+  0.02	117	68	F	89	          Lactobacillaceae
+  0.01	41	38	G	90	            Lactobacillus
+  0.00	3	3	S	3370	              Lactobacillus helveticus
+  0.00	7	5	G	646	            Lentilactobacillus
+  0.00	2	2	S	2040	              Lentilactobacillus hilgardii
+  0.00	1	0	G	389	            Weissella
+  0.00	1	1	S	390	              Weissella confusa
+  0.01	69	0	O	2151	        Bacillales_A
+  0.01	69	0	F	2152	          Planococcaceae
+  0.01	69	0	G	5943	            Lysinibacillus
+  0.01	69	69	S	5944	              Lysinibacillus fusiformis_D
+  0.01	35	0	O	84	        Staphylococcales
+  0.01	35	0	F	3955	          Gemellaceae
+  0.01	35	0	G	3956	            Gemella
+  0.01	30	30	S	4042	              Gemella sanguinis
+  0.00	5	5	S	4471	              Gemella sp900766305
+  0.00	2	0	O	139	        Erysipelotrichales
+  0.00	2	0	F	140	          Erysipelatoclostridiaceae
+  0.00	2	0	G	1922	            Massiliomicrobiota
+  0.00	2	2	S	1923	              Massiliomicrobiota sp002160865
+  0.00	1	0	O	595	        RF39
+  0.00	1	0	F	596	          UBA660
+  0.00	1	0	G	1582	            CAG-776
+  0.00	1	1	S	1903	              CAG-776 sp900758895
+  0.00	18	0	P	118	    Actinobacteriota
+  0.00	18	0	C	119	      Coriobacteriia
+  0.00	18	0	O	120	        Coriobacteriales
+  0.00	18	0	F	584	          Eggerthellaceae
+  0.00	18	0	G	585	            CAG-1427
+  0.00	18	18	S	1702	              CAG-1427 sp900556585
+  0.00	6	0	P	60	    Firmicutes_A
+  0.00	6	2	C	61	      Clostridia
+  0.00	4	0	O	76	        Oscillospirales
+  0.00	4	0	F	164	          Acutalibacteraceae
+  0.00	4	0	G	752	            Eubacterium_R
+  0.00	4	4	S	4101	              Eubacterium_R sp900547915

@@ -14,7 +14,7 @@ var lines []string
 
 func init() {
 	filename := filepath.Join("..", "testdata", "test.k2")
-	taxondb, _ = TaxonDB(filename, "", "{k};{p};{c};{o};{f};{g};{s}")
+	taxondb, _ = TaxonDB(filename, "", "{k};{p};{c};{o};{f};{g};{s}", false)
 
 	lines = make([]string, 100)
 	k2file, _ := os.Open(filename)
@@ -23,11 +23,12 @@ func init() {
 		scanner.Scan()
 		lines[i] = scanner.Text()
 	}
+	k2file.Close()
 }
 
 func TestKmers(t *testing.T) {
 	filename := filepath.Join("..", "testdata", "test.k2")
-	k2map, err := SummarizeKmers(filename)
+	k2map, err := SummarizeKmers(filename, false)
 	if err != nil {
 		t.Fatal("Error when running summary.")
 	}
@@ -39,7 +40,7 @@ func TestKmers(t *testing.T) {
 
 func TestCollapse(t *testing.T) {
 	filename := filepath.Join("..", "testdata", "test.k2")
-	k2map, err := SummarizeKmers(filename)
+	k2map, err := SummarizeKmers(filename, false)
 	if err != nil {
 		t.Fatal("Error when running summary.")
 	}
@@ -63,7 +64,7 @@ func TestScoring(t *testing.T) {
 		t.Error("Not initialized.")
 	}
 	for i := 0; i < 10; i++ {
-		score := ScoreRead(lines[i], taxondb)
+		score := ScoreRead(lines[i], taxondb, false)
 		if score.Consistency > 1 || score.Consistency < 0 {
 			t.Errorf("Got invalid consistency score: %f", score.Consistency)
 		}
@@ -80,7 +81,7 @@ func TestScoring(t *testing.T) {
 
 func BenchmarkScoring(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		ScoreRead(lines[n%100], taxondb)
+		ScoreRead(lines[n%100], taxondb, false)
 	}
 }
 
@@ -90,7 +91,7 @@ func BenchmarkKmers(b *testing.B) {
 
 	filename := filepath.Join("..", "testdata", "test.k2")
 	for n := 0; n < b.N; n++ {
-		SummarizeKmers(filename)
+		SummarizeKmers(filename, false)
 	}
 }
 
@@ -99,7 +100,7 @@ func BenchmarkCollapse(b *testing.B) {
 	log.SetOutput(&str)
 
 	filename := filepath.Join("..", "testdata", "test.k2")
-	k2map, _ := SummarizeKmers(filename)
+	k2map, _ := SummarizeKmers(filename, false)
 	for n := 0; n < b.N; n++ {
 		CollapseRanks(k2map, "", "{k};{p};{c};{o};{f};{g};{s}")
 	}

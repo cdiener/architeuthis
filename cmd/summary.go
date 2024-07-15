@@ -49,13 +49,16 @@ assignments those might all be within the same family or genus.`,
 		} else {
 			log.Printf("Found taxonkit=%s.", version)
 		}
-		filetype, _ := lib.GetFormat(args[0])
+		filetype, named := lib.GetFormat(args[0])
 		if filetype != "kraken2" {
 			log.Fatal("mapping summaries require a Kraken2 file")
 		}
+		if named {
+			log.Println("detected Kraken2 output with taxon names.")
+		}
 
 		id := strings.Split(filepath.Base(args[0]), ".")[0]
-		kmap, err := lib.SummarizeKmers(args[0])
+		kmap, err := lib.SummarizeKmers(args[0], named)
 		if err != nil {
 			log.Fatal("Failed to build the kmer mapping hash.")
 		}

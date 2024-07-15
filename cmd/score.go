@@ -60,14 +60,17 @@ abundance of kmers into account as well).
 		} else {
 			log.Printf("Found taxonkit=%s.", version)
 		}
-		filetype, _ := lib.GetFormat(args[0])
+		filetype, named := lib.GetFormat(args[0])
 		if filetype != "kraken2" {
 			log.Fatal("read scoring requires a Kraken2 file.")
+		}
+		if named {
+			log.Println("detected Kraken2 output with taxon names.")
 		}
 
 		out, _ := cmd.Flags().GetString("out")
 
-		err = lib.ScoreReadsToFile(args[0], out, datadir, format)
+		err = lib.ScoreReadsToFile(args[0], out, datadir, format, named)
 		if err != nil {
 			log.Fatalf("Saving file failed with error: %v", err)
 		}
