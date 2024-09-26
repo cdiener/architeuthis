@@ -64,13 +64,16 @@ func SummarizeKmers(filepath string, named bool) (Mapping, error) {
 		err := ParseMapping(k2map, scanner.Text(), named)
 		if err != nil {
 			log.Fatal(err)
-			return nil, err
 		}
 		reads += 1
 		if reads%1e6 == 0 {
 			log.Printf("Processed %d reads...", reads)
 		}
 	}
+	if reads%1e6 == 0 {
+		log.Printf("Processed %d reads...", reads)
+	}
+
 	log.Printf("Processing %d reads - Done.", reads)
 	return k2map, nil
 }
@@ -219,6 +222,12 @@ func ScoreReadsToFile(k2path string, out string, data_dir string, format string,
 	log.Printf("Reading k-mer assignments from %s an dwriting to %s.", k2path, out)
 	for scanner.Scan() {
 		s := ScoreRead(scanner.Text(), taxondb, named)
+
+		reads += 1
+		if reads%1e6 == 0 {
+			log.Printf("Processed %d reads...", reads)
+		}
+
 		if s == nil {
 			continue
 		}
@@ -229,12 +238,11 @@ func ScoreReadsToFile(k2path string, out string, data_dir string, format string,
 			strconv.Itoa(int(s.Multiplicity)), fmt.Sprint(s.Entropy),
 		}
 		writer.Write(record)
-
-		reads += 1
-		if reads%1e6 == 0 {
-			log.Printf("Processed %d reads...", reads)
-		}
 	}
+	if err := scanner.Err(); err != nil {
+		log.Fatalf("The parser encountered an error: %s", err)
+	}
+
 	log.Printf("Processing %d reads - Done.", reads)
 	writer.Flush()
 
@@ -270,7 +278,12 @@ func FilterReads(k2path string, out string, data_dir string,
 	log.Printf("Reading k-mer assignments from %s and writing to %s.", k2path, out)
 	for scanner.Scan() {
 		s := ScoreRead(scanner.Text(), taxondb, named)
+
 		reads += 1
+		if reads%1e6 == 0 {
+			log.Printf("Processed %d reads...", reads)
+		}
+
 		if s == nil || s.Consistency < min_consistency ||
 			s.Entropy > max_entropy || s.Multiplicity > max_multiplicity {
 			continue
@@ -279,11 +292,12 @@ func FilterReads(k2path string, out string, data_dir string,
 		writer.WriteRune('\n')
 
 		passed += 1
-		if reads%1e6 == 0 {
-			log.Printf("Processed %d reads...", reads)
-		}
 	}
-	log.Printf("Processing %d reads - Done. %d/%d reads passed the filter.",
+	if err := scanner.Err(); err != nil {
+		log.Fatalf("The parser encountered an error: %s", err)
+	}
+
+	log.Printf("Processed %d reads - Done. %d/%d reads passed the filter.",
 		reads, passed, reads)
 	writer.Flush()
 
@@ -298,11 +312,13 @@ func TaxonDB(filepath string, data_dir string, format string, named bool) (map[s
 	defer k2file.Close()
 
 	reads := 0
+	classified := 0
 	scanner := bufio.NewScanner(k2file)
 	taxids := make(map[string]bool, 1e4)
 
 	log.Printf("Reading k-mer assignments from %s.", filepath)
 	for scanner.Scan() {
+		reads += 1
 		tokens := strings.Split(strings.Trim(scanner.Text(), " "), "\t")
 		if tokens[0] != "C" {
 			continue
@@ -320,12 +336,16 @@ func TaxonDB(filepath string, data_dir string, format string, named bool) (map[s
 				taxids[tid] = true
 			}
 		}
-		reads += 1
+		classified += 1
 		if reads%1e6 == 0 {
 			log.Printf("Processed %d reads...", reads)
 		}
 	}
-	log.Printf("Processing %d reads - Done.", reads)
+	if err := scanner.Err(); err != nil {
+		log.Fatalf("The parser encountered an error: %s", err)
+	}
+
+	log.Printf("Processed %d reads (%d classified) - Done.", reads, classified)
 
 	lineages := AddLineage(taxids, data_dir, format)
 

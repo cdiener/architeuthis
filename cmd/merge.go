@@ -24,9 +24,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var SimpleFormats = map[string]bool{
-	"bracken": false,
-	"kraken":  true,
+var HasHeader = map[string]bool{
+	"bracken": true,
+	"kraken2": false,
 	"mapping": true,
 	"report":  false,
 }
@@ -58,17 +58,20 @@ Supported formats are Bracken output and mapping summaries.`,
 		if len(formats) > 1 {
 			log.Fatalf("arguments have differing formats, found the following: %v", formats)
 		}
+		format := formats[0]
 
-		log.Printf("Detected format for files is '%s'.", formats[0])
+		log.Printf("Detected format for files is '%s'.", format)
 
-		if formats[0] == "report" {
+		if format == "report" {
 			log.Fatalf("merging kraken2 report files is not supported")
 		}
 
-		if formats[0] == "kraken" || formats[0] == "mapping" || formats[0] == "bracken-merged" {
-			err = lib.SimpleAppend(args, out)
-		} else if formats[0] == "bracken" {
+		if format == "kraken2" || format == "mapping" || format == "bracken-merged" {
+			err = lib.SimpleAppend(args, out, HasHeader[format])
+		} else if format == "bracken" {
 			err = lib.SampleAppend(args, out, '\t')
+		} else {
+			log.Fatalf("I do no know how to merge format %s :(", format)
 		}
 		if err != nil {
 			log.Fatal(err)

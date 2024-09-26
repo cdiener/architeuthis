@@ -27,7 +27,7 @@ import (
 	"strings"
 )
 
-func SimpleAppend(files []string, out string) error {
+func SimpleAppend(files []string, out string, header bool) error {
 	merged, err := os.Create(out)
 	if err != nil {
 		return err
@@ -42,10 +42,13 @@ func SimpleAppend(files []string, out string) error {
 		}
 		reader := bufio.NewScanner(fi)
 		lines := 0
-		if i > 0 {
-			reader.Scan()
-		} else {
-			lines = -1
+
+		if header {
+			if i > 0 {
+				reader.Scan()
+			} else {
+				lines = -1
+			}
 		}
 		for reader.Scan() {
 			_, err := writer.Write(reader.Bytes())
@@ -56,9 +59,6 @@ func SimpleAppend(files []string, out string) error {
 			lines++
 		}
 		fi.Close()
-		if err != nil {
-			return err
-		}
 		log.Printf("Wrote %d records from %s.", lines, file)
 	}
 	writer.Flush()
@@ -106,6 +106,8 @@ func SampleAppend(files []string, out string, sep rune) error {
 				file,
 			)
 		}
+
+		lines := 0
 		field[0] = sample_id
 		for {
 			records, err = reader.Read()
@@ -120,8 +122,10 @@ func SampleAppend(files []string, out string, sep rune) error {
 			if err != nil {
 				return err
 			}
+			lines += 1
 		}
 		fi.Close()
+		log.Printf("Wrote %d records from %s.", lines, file)
 	}
 	writer.Flush()
 
