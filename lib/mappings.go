@@ -345,9 +345,11 @@ func TaxonDB(filepath string, data_dir string, format string, named bool) (map[s
 		log.Fatalf("The parser encountered an error: %s", err)
 	}
 
-	log.Printf("Processed %d reads (%d classified) - Done.", reads, classified)
+	log.Printf("Processed %d reads - Done.", reads)
 
 	lineages := AddLineage(taxids, data_dir, format)
+	log.Printf("%d reads had assigned taxa. Obtained lineage information for %d unique taxa.",
+		classified, len(lineages))
 
 	return lineages, reads
 }
