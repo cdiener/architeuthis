@@ -44,9 +44,25 @@ assignment would be very ambiguous but the genus assignment would not be. We rep
 the number of different classifications (multiplicity) and the shannon index (taking
 abundance of kmers into account as well).`,
 	Run: func(cmd *cobra.Command, args []string) {
+		version, ok := lib.HasTaxonkit()
+		if !ok {
+			log.Fatal("no taxonkit installation could be found :(")
+		} else {
+			log.Printf("Found taxonkit=%s.", version)
+		}
+
 		datadir, err := cmd.Flags().GetString("data-dir")
 		if err != nil {
 			log.Fatal(err)
+		}
+		if datadir == "" {
+			k2lib, err := cmd.Flags().GetString("db")
+			if err == nil && k2lib != "" {
+				datadir = k2lib + "/taxonomy"
+				log.Printf("Using the taxonomy from the Kraken2 database at `%s`.", k2lib)
+			}
+		} else {
+			log.Printf("Using the taxonomy from the Kraken2 database at `%s`.", datadir)
 		}
 		max_entropy, err := cmd.Flags().GetFloat64("max-entropy")
 		if err != nil {
@@ -60,13 +76,11 @@ abundance of kmers into account as well).`,
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		version, ok := lib.HasTaxonkit()
-		if !ok {
-			log.Fatal("no taxonkit installation could be found :(")
-		} else {
-			log.Printf("Found taxonkit=%s.", version)
+		format, err := cmd.Flags().GetString("format")
+		if err != nil {
+			log.Fatal(err)
 		}
+
 		filetype, named := lib.GetFormat(args[0])
 		if filetype != "kraken2" {
 			log.Fatal("read scoring requires a Kraken2 file.")
@@ -77,7 +91,7 @@ abundance of kmers into account as well).`,
 
 		out, _ := cmd.Flags().GetString("out")
 
-		err = lib.FilterReads(args[0], out, datadir, "{k};{p};{c};{o};{f};{g};{s}", named,
+		err = lib.FilterReads(args[0], out, datadir, format, named,
 			min_consistency, max_entropy, max_multiplicity)
 
 		if err != nil {
@@ -94,4 +108,6 @@ func init() {
 	filterCmd.Flags().Float64("max-entropy", 0.1, "Maximum entropy for kmer classifications at classified rank.")
 	filterCmd.Flags().Float64("min-consistency", 0.9, "Minimum consistency of the read classification.")
 	filterCmd.Flags().Uint32("max-multiplicity", 2, "Maximum number of alternative classifications on the classified rank.")
+	filterCmd.Flags().StringP("format", "f", "{K};{p};{c};{o};{f};{g};{s}", "The taxonomic ranks to connsider during scoring.")
+
 }

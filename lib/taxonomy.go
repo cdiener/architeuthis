@@ -28,6 +28,20 @@ type Lineage struct {
 	Taxids []string
 }
 
+type Node struct {
+	Taxid    int
+	Name     string
+	Parent   *Node
+	Children []*Node
+	Value    float64
+}
+
+type Tree struct {
+	Root     *Node
+	Taxids   map[int]*Node
+	Children []*Node
+}
+
 func HasTaxonkit() (string, bool) {
 	cmd := exec.Command("taxonkit", "version")
 	var out strings.Builder
@@ -69,12 +83,13 @@ func AddLineage[K any](taxids map[string]K, data_dir string, format string) map[
 		log.Println("No taxids to classify.")
 		return results
 	}
+
 	for _, line := range strings.Split(strings.Trim(out.String(), "\r\n"), "\n") {
 		entries := strings.Split(line, "\t")
-		results[entries[0]] = &Lineage{
-			strings.Split(entries[1], ";"),
-			strings.Split(entries[2], ";"),
-		}
+		names := strings.Split(entries[1], ";")
+		tids := strings.Split(entries[2], ";")
+
+		results[entries[0]] = &Lineage{names, tids}
 	}
 
 	return results
@@ -95,12 +110,12 @@ func GetRanks(format string) []string {
 func GetLeaf(lin *Lineage) (int, string) {
 	leaf := ""
 	idx := -1
-	for i, s := range lin.Names {
-		if len(s) <= 3 {
+	for i := len(lin.Names) - 1; i >= 0; i-- {
+		if len(lin.Names[i]) > 3 {
+			idx = i
+			leaf = lin.Names[i]
 			break
 		}
-		idx = i
-		leaf = s
 	}
 	return idx, leaf
 }

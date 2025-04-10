@@ -84,5 +84,6 @@ func init() {
 	// summaryCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	summaryCmd.Flags().String("out", "mapping_summary.csv", "The output file (CSV format).")
 	summaryCmd.Flags().String("data-dir", "", "The path to the taxonomy dumps.")
-	summaryCmd.Flags().StringP("format", "f", "{k};{p};{c};{o};{f};{g};{s}", "The format of the add lineage annotations.")
+	summaryCmd.Flags().StringP("format", "f", "{K};{p};{c};{o};{f};{g};{s}", "The taxonomic ranks to connsider during scoring.")
+
 }

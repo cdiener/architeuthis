@@ -82,5 +82,5 @@ func init() {
 
 	scoreCmd.Flags().String("out", "mapping_scores.csv", "The output file (CSV format).")
 	scoreCmd.Flags().String("data-dir", "", "The path to the taxonomy dumps.")
-	scoreCmd.Flags().StringP("format", "f", "{k};{p};{c};{o};{f};{g};{s}", "The taxonomic ranks to connsider during scoring.")
+	scoreCmd.Flags().StringP("format", "f", "{K};{p};{c};{o};{f};{g};{s}", "The taxonomic ranks to connsider during scoring.")
 }

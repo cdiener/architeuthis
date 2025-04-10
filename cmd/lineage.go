@@ -83,7 +83,7 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	lineageCmd.Flags().String("data-dir", "", "The path to the taxonomy dumps.")
-	lineageCmd.Flags().StringP("format", "f", "{k};{p};{c};{o};{f};{g};{s}", "The format of the add lineage annotations.")
+	lineageCmd.Flags().StringP("format", "f", "{K};{p};{c};{o};{f};{g};{s}", "The taxonomic ranks to connsider during scoring.")
 	lineageCmd.Flags().StringP("out", "o", "annotated.csv", "The filename of the output CSV.")
 }
 
