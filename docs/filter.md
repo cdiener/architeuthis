@@ -89,7 +89,7 @@ architeuthis mapping score --data-dir /my/taxdump/ my_sample.k2 --out scores.csv
 ### Specifying the lineage format
 
 You can specify the lineage format using [the taxonkit syntax](https://bioinf.shenwei.me/taxonkit/usage/#reformat).
-The defualt lineage format is `{k};{p};{c};{o};{f};{g};{s}` which are the canonical ranks down
+The defualt lineage format is `{K};{p};{c};{o};{f};{g};{s}` which are the canonical ranks down
 to species level. However, you could change this. For instance, to only keep genus and species:
 
 ```bash
