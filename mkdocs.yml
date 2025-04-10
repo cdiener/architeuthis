@@ -13,6 +13,7 @@ nav:
     - Merging: merge.md
     - Mapping Analysis: mapping.md
     - Filtering: filter.md
+  - Releases: release_notes.md
 
 theme:
   name: material
