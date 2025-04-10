@@ -94,3 +94,4 @@ to species level. However, you could change this. For instance, to only keep gen
 
 ```bash
 architeuthis mapping score --format "{g};{s}" my_sample.k2 --out scores.csv
+```
