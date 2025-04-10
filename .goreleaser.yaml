@@ -38,6 +38,11 @@ archives:
       - goos: windows
         format: zip
 
+release:
+  footer: |
+    General release notes can be found in the
+    [documentation](https://cdiener.github.io/architeuthis/release_notes/).
+
 changelog:
   sort: asc
   filters:
