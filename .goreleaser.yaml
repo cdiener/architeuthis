@@ -40,8 +40,7 @@ archives:
 
 release:
   footer: |
-    General release notes can be found in the
-    [documentation](https://cdiener.github.io/architeuthis/release_notes/).
+    General release notes can be found in the [documentation](https://cdiener.github.io/architeuthis/release_notes/).
 
 changelog:
   sort: asc
