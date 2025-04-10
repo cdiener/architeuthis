@@ -14,7 +14,7 @@ var lines []string
 
 func init() {
 	filename := filepath.Join("..", "testdata", "test.k2")
-	taxondb, _ = TaxonDB(filename, "", "{k};{p};{c};{o};{f};{g};{s}", false)
+	taxondb, _ = TaxonDB(filename, "", "{K};{p};{c};{o};{f};{g};{s}", false)
 
 	lines = make([]string, 100)
 	k2file, _ := os.Open(filename)
@@ -44,16 +44,16 @@ func TestCollapse(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error when running summary.")
 	}
-	collapsed := CollapseRanks(k2map, "", "{k};{p};{c};{o};{f};{g};{s}")
+	collapsed := CollapseRanks(k2map, "", "{K};{p};{c};{o};{f};{g};{s}")
 
 	c := collapsed["816"]
 	if c.Reads != 93 {
 		t.Errorf("Expected %q but got %q.", 93, c.Reads)
 	}
 
-	bac, ok := c.Classes["k__Bacteria"]
+	bac, ok := c.Classes["g__Bacteroides"]
 	if !ok {
-		t.Errorf("Expected %q in ranks got %q.", "k__Bacteria", c.Classes)
+		t.Errorf("Expected %q in ranks got %q.", "g__Bacteroides", c.Classes)
 	} else if bac <= 0 {
 		t.Errorf("Expected positive bacteria counts got %q.", bac)
 	}
