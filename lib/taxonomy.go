@@ -20,6 +20,7 @@ import (
 	"log"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -50,13 +51,17 @@ func HasTaxonkit() (string, bool) {
 		return "", false
 	}
 	version := strings.Split(out.String(), " v")[1]
+	minor, _ := strconv.Atoi(strings.Split(version, ".")[1])
+	if minor < 20 {
+		return "", false
+	}
 
 	return strings.Trim(version, "\r\n"), true
 }
 
 func AddLineage[K any](taxids map[string]K, data_dir string, format string) map[string]*Lineage {
-	args := []string{"reformat", "--taxid-field", "1",
-		"--show-lineage-taxids", "--add-prefix"}
+	args := []string{"reformat2", "--taxid-field", "1",
+		"--show-lineage-taxids"}
 	args = append(args, "--format", format)
 	if data_dir != "" {
 		args = append(args, "--data-dir", data_dir)
@@ -88,7 +93,11 @@ func AddLineage[K any](taxids map[string]K, data_dir string, format string) map[
 		entries := strings.Split(line, "\t")
 		names := strings.Split(entries[1], ";")
 		tids := strings.Split(entries[2], ";")
-
+		for i, tid := range tids {
+			if len(tid) > 2 {
+				tids[i] = tid[3:]
+			}
+		}
 		results[entries[0]] = &Lineage{names, tids}
 	}
 

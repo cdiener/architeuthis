@@ -9,12 +9,13 @@ import (
 	"testing"
 )
 
+var DefaultFormat string = "d__{domain|acellularroot|superkingdom};p__{phylum};c__{class};o__{order};f__{family};g__{genus};s__{species}"
 var taxondb map[string]*Lineage
 var lines []string
 
 func init() {
 	filename := filepath.Join("..", "testdata", "test.k2")
-	taxondb, _ = TaxonDB(filename, "", "{K};{p};{c};{o};{f};{g};{s}", false)
+	taxondb, _ = TaxonDB(filename, "", DefaultFormat, false)
 
 	lines = make([]string, 100)
 	k2file, _ := os.Open(filename)
@@ -44,7 +45,7 @@ func TestCollapse(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error when running summary.")
 	}
-	collapsed := CollapseRanks(k2map, "", "{K};{p};{c};{o};{f};{g};{s}")
+	collapsed := CollapseRanks(k2map, "", DefaultFormat)
 
 	c := collapsed["816"]
 	if c.Reads != 93 {
@@ -102,6 +103,6 @@ func BenchmarkCollapse(b *testing.B) {
 	filename := filepath.Join("..", "testdata", "test.k2")
 	k2map, _ := SummarizeKmers(filename, false)
 	for n := 0; n < b.N; n++ {
-		CollapseRanks(k2map, "", "{k};{p};{c};{o};{f};{g};{s}")
+		CollapseRanks(k2map, "", DefaultFormat)
 	}
 }

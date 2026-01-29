@@ -108,6 +108,6 @@ func init() {
 	filterCmd.Flags().Float64("max-entropy", 0.1, "Maximum entropy for kmer classifications at classified rank.")
 	filterCmd.Flags().Float64("min-consistency", 0.9, "Minimum consistency of the read classification.")
 	filterCmd.Flags().Uint32("max-multiplicity", 2, "Maximum number of alternative classifications on the classified rank.")
-	filterCmd.Flags().StringP("format", "f", "{K};{p};{c};{o};{f};{g};{s}", "The taxonomic ranks to connsider during scoring.")
+	filterCmd.Flags().StringP("format", "f", DefaultFormat, "The taxonomic ranks to connsider during scoring.")
 
 }

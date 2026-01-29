@@ -59,7 +59,7 @@ architeuthis mapping score my_sample.k2 --out scores.csv
 ## Output
 
 ```csv
-ample_id,read_id,taxid,name,rank,n_kmers,consistency,confidence,multiplicity,entropy
+sample_id,read_id,taxid,name,rank,n_kmers,consistency,confidence,multiplicity,entropy
 testdata/negative,165179_NZ_CP102288.1_598818_598628_1_0_0_0_0:0:0_0:0:0_f59,165179,s__Segatella copri,s,153,1,1,1,0
 testdata/negative,47678_NZ_CP081920.1_2131436_2131626_0_1_0_0_0:0:0_0:0:0_4749,816,g__Bacteroides,g,145,1,1,1,0
 testdata/negative,821_NZ_CP103067.1_1529728_1529923_0_1_0_0_2:0:0_1:0:0_4c09,909656,g__Phocaeicola,g,68,1,1,1,0
@@ -88,10 +88,11 @@ architeuthis mapping score --data-dir /my/taxdump/ my_sample.k2 --out scores.csv
 
 ### Specifying the lineage format
 
-You can specify the lineage format using [the taxonkit syntax](https://bioinf.shenwei.me/taxonkit/usage/#reformat).
-The defualt lineage format is `{K};{p};{c};{o};{f};{g};{s}` which are the canonical ranks down
-to species level. However, you could change this. For instance, to only keep genus and species:
+You can specify the lineage format using [the taxonkit syntax](https://bioinf.shenwei.me/taxonkit/usage/#reformat2).
+The defualt lineage format uses all ranks from phylum to species with a prepended modified domain rank which will either be Bacteria,
+Archaea, Virus or Eukaryotes and with rank prefixes (like `d__Bacteria`).
+However, you could change this. For instance, to only keep genus and species without prefixes:
 
 ```bash
-architeuthis mapping score --format "{g};{s}" my_sample.k2 --out scores.csv
+architeuthis mapping score --format "{genus};{species}" my_sample.k2 --out scores.csv
 ```

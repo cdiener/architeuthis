@@ -94,7 +94,7 @@ to control the location of the NCBI taxonomy dumps and to specify the ranks incl
 For instance, to use a custom taxonomy and only the kingdom level you would use:
 
 ```
-architeuthis mapping summary --data-dir /my/taxonomy --format "{k}" --out my_summary.csv my_sample.k2
+architeuthis mapping summary --data-dir /my/taxonomy --format "{kingdom}" --out my_summary.csv my_sample.k2
 ```
 
 !!! warning "Restrictions for the format"

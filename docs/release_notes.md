@@ -1,5 +1,13 @@
 Those are the changes to `architeuthis` starting with version 0.3.0.
 
+## 0.5.0
+
+Now uses `reformat2` from taxonkit providing more flexibility to the reported taxonomy.
+
+Similar to taxonkit, architeuthis reports a modified domain rank merging the NCBI taxonomy's
+"domain", "acellular root", and "superkingdom" to provide support for multiple NCBI
+Taxonomy versions and Viruses.
+
 ## 0.4.0
 
 `architeuthis mapping filter` now allows the `--format` argument.

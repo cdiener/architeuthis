@@ -22,8 +22,10 @@ go.work
 
 # Large data
 testdata/negative.k2
+testdata/taxonomy
 /*.csv
 filtered.k2
+
 
 dist/
 architeuthis

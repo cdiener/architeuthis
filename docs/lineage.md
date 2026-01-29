@@ -36,9 +36,10 @@ architeuthis lineage --data-dir /my/taxdump/ my_file.b2 -o my_file_lineage.csv
 
 ### Specifying the lineage format
 
-You can specify the lineage format using [the taxonkit syntax](https://bioinf.shenwei.me/taxonkit/usage/#reformat).
-The defualt lineage format is `{k};{p};{c};{o};{f};{g};{s}` which are the canonical ranks down
-to species level. However, you could change this. For instance, to only keep genus and species:
+You can specify the lineage format using [the taxonkit syntax](https://bioinf.shenwei.me/taxonkit/usage/#reformat2).
+The defualt lineage format uses all ranks from phylum to species with a prepended modified domain rank which will either be Bacteria,
+Archaea, Virus or Eukaryotes and with rank prefixes (like `d__Bacteria`).
+However, you could change this. For instance, to only keep genus and species without prefixes:
 
 ```bash
 architeuthis lineage --format "{g};{s}" my_file.b2 -o my_file_lineage.csv

@@ -28,6 +28,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var DefaultFormat string = "d__{domain|acellularroot|superkingdom};p__{phylum};c__{class};o__{order};f__{family};g__{genus};s__{species}"
+
 var TaxidIndex = map[string]string{
 	"bracken":        "taxonomy_id",
 	"bracken-merged": "taxonomy_id",
@@ -83,14 +85,14 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	lineageCmd.Flags().String("data-dir", "", "The path to the taxonomy dumps.")
-	lineageCmd.Flags().StringP("format", "f", "{K};{p};{c};{o};{f};{g};{s}", "The taxonomic ranks to connsider during scoring.")
+	lineageCmd.Flags().StringP("format", "f", DefaultFormat, "The taxonomic ranks to consider during scoring.")
 	lineageCmd.Flags().StringP("out", "o", "annotated.csv", "The filename of the output CSV.")
 }
 
 func FoldInLineage(filename string, filetype string, format string, out string, data_dir string) error {
 	version, ok := lib.HasTaxonkit()
 	if !ok {
-		return errors.New("no taxonkit installation could be found :(")
+		return errors.New("no feasible taxonkit installation could be found :(")
 	} else {
 		log.Printf("Found taxonkit=%s.", version)
 	}
