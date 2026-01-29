@@ -42,7 +42,7 @@ Archaea, Virus or Eukaryotes and with rank prefixes (like `d__Bacteria`).
 However, you could change this. For instance, to only keep genus and species without prefixes:
 
 ```bash
-architeuthis lineage --format "{g};{s}" my_file.b2 -o my_file_lineage.csv
+architeuthis lineage --format "{genus};{species}" my_file.b2 -o my_file_lineage.csv
 ```
 
 !!! question "Why does lineage not separate ranks into its own CSV columns?"
